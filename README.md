@@ -8,7 +8,7 @@ Aplicación Android desarrollada en **Kotlin** y **Java** usando **Jetpack Compo
 
 ## ✨ Características
 
-- 🎤 Conversión de voz a texto
+- 🎤 Conversión de voz a texto.
 - 💾 Guardado de texto en archivos locales
 - 🎨 Interfaz moderna con Jetpack Compose
 - 🌐 Consumo de APIs REST con Retrofit y OkHttp
