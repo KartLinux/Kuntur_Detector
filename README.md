@@ -1,6 +1,6 @@
 # Kuntur Detector
 
-![Speech And Text Logo](logo_dron.png)
+![Speech And Text Logo](Logo_dron.png)
 
 Aplicación Android desarrollada en **Kotlin** y **Java** usando **Jetpack Compose** para la interfaz de usuario. Permite convertir voz a texto y guardar los resultados en archivos locales. Integra llamadas a APIs usando **Retrofit** y **OkHttp**.
 
