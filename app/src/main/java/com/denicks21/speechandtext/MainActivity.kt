@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
                 delay(10_000L)
                 if (listening.value && speechInput.value.isNotBlank()) {
                     val ts = System.currentTimeMillis()
-                    writeFile("Kuntur<3Luis_${ts}.txt", speechInput.value)
+                    writeFile("Kuntur<3LuisGaona_${ts}.txt", speechInput.value)
                     Toast.makeText(
                         this@MainActivity,
                         getString(R.string.toast_auto_saved),

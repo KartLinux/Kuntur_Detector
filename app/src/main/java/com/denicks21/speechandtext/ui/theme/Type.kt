@@ -78,7 +78,7 @@ val Typography = Typography(
     h6 = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Light,
-        fontSize   = 20.sp
+        fontSize   = 14.sp
     ),
     subtitle1 = TextStyle(
         fontFamily = Poppins,
@@ -108,7 +108,7 @@ val Typography = Typography(
     caption = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Light,
-        fontSize   = 12.sp
+        fontSize   = 8.sp
     ),
     // 3. Añadimos estilos adicionales como overline
     overline = TextStyle(

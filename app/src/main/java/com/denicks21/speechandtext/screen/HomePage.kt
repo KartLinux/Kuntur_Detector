@@ -7,9 +7,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,232 +16,208 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.denicks21.speechandtext.R
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.unit.Dp
 
 // -----------------------
 // Constantes de configuración
 // -----------------------
 
-// Controlan niveles de transparencia en las tarjetas
-private const val MAIN_CARD_ALPHA = 0.3f            // Opacidad de la tarjeta principal
-private const val METRIC_CARD_ALPHA = 0.3f          // Opacidad de las tarjetas de métrica
+// Niveles de transparencia
+private const val MAIN_CARD_ALPHA = 0.3f
+private const val METRIC_CARD_ALPHA = 0.3f
 
-// Radios de las esquinas para dar estilo redondeado
-private val MAIN_CARD_CORNER = 16.dp                // Esquinas redondeadas de la tarjeta principal
-private val METRIC_CARD_CORNER = 12.dp              // Esquinas redondeadas de las tarjetas de métrica
+// Radios redondeados
+private val MAIN_CARD_CORNER = 16.dp
+private val METRIC_CARD_CORNER = 12.dp
 
-// Alturas fijas para mantener consistencia de diseño
-private val MAIN_CARD_HEIGHT = 250.dp               // Altura de la tarjeta principal
-private val METRIC_CARD_HEIGHT = 150.dp             // Altura de cada tarjeta de métrica
+// Espacios para la fila de ubicación
+private val LOCATION_ICON_SIZE = 20.dp
+private val LOCATION_SPACING = 8.dp
 
-// Tamaños y espacios para el componente de ubicación
-private val LOCATION_ICON_SIZE = 20.dp              // Tamaño del icono de “ubicación”
-private val LOCATION_SPACING = 8.dp                 // Espacio horizontal entre icono y texto
-
-// Función auxiliar que devuelve una ubicación de prueba
 private fun getFakeLocation(): String = "Loja, Chaguarpamba, Ecuador"
 
 @Composable
 fun HomePage(
-    speechInput:       String,        // Texto obtenido del reconocimiento de voz
-    isListening:       Boolean,       // Indica si Kuntur está “escuchando” o no
-    onToggleListening: () -> Unit     // Acción para alternar entre escuchar/apagar
+    speechInput: String,
+    isListening: Boolean,
+    onToggleListening: () -> Unit
 ) {
-    // Contenedor principal con fondo degradado y padding externo
-    Box(
+    // Con BoxWithConstraints leemos el alto real disponible
+    BoxWithConstraints(
         modifier = Modifier
-            .fillMaxSize()  // ocupa toda la pantalla
+            .fillMaxSize()
             .background(
                 Brush.horizontalGradient(
-                    colors = listOf(
-                        MaterialTheme.colors.primary,        // inicio del gradiente
-                        MaterialTheme.colors.primaryVariant  // fin del gradiente
+                    listOf(
+                        MaterialTheme.colors.primary,
+                        MaterialTheme.colors.primaryVariant
                     )
                 )
             )
-            .padding(16.dp)   // margen interior alrededor del contenido
+            .padding(16.dp)
     ) {
-        // Columna central que agrupa todos los elementos de la pantalla
+        val screenHeight = maxHeight
+        val mainCardMaxHeight = screenHeight * 0.45f    // hasta 40% de la pantalla
+        val metricRowHeight   = screenHeight * 0.25f   // 15% para la fila de métricas
+
+        // Contenido desplazable, con padding bottom para no quedar oculto
         Column(
             modifier = Modifier
-                .fillMaxWidth()                       // ancho completo
-                .verticalScroll(rememberScrollState()), // permite scroll si hace falta
-            verticalArrangement = Arrangement.Center,  // centra hijos en vertical
-            horizontalAlignment = Alignment.CenterHorizontally  // centra hijos en horizontal
+                .fillMaxSize()
+                .padding(bottom = metricRowHeight + 22.dp) // evita overlape con métricas
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // — Ubicación con icono —
+            // — Ubicación —
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp, top = 36.dp) // espaciado superior e inferior
+                modifier = Modifier.padding(top = 16.dp, bottom = 0.dp)
             ) {
                 Icon(
-                    painter            = painterResource(id = R.drawable.ic_ubication), // icono de ubicación
+                    painter = painterResource(id = R.drawable.ic_ubication),
                     contentDescription = "Ubicación",
-                    tint               = MaterialTheme.colors.onPrimary,                // color del tema
-                    modifier           = Modifier.size(LOCATION_ICON_SIZE)               // tamaño fijo
+                    tint = MaterialTheme.colors.onPrimary,
+                    modifier = Modifier.size(LOCATION_ICON_SIZE)
                 )
-                Spacer(modifier = Modifier.width(LOCATION_SPACING))  // espacio entre icono y texto
+                Spacer(modifier = Modifier.width(LOCATION_SPACING))
                 Text(
-                    text  = getFakeLocation(),                         // texto de ubicación
-                    style = MaterialTheme.typography.subtitle2,        // estilo tipográfico
-                    color = MaterialTheme.colors.onPrimary              // color de texto
+                    text = getFakeLocation(),
+                    style = MaterialTheme.typography.overline,
+                    color = MaterialTheme.colors.onPrimary
                 )
             }
 
-            // — Tarjeta principal de estado de Kuntur —
+            // — Tarjeta principal (alto dinámico) —
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()                         // ancho completo
-                    .height(MAIN_CARD_HEIGHT)               // altura fija
-                    .clip(RoundedCornerShape(MAIN_CARD_CORNER)), // bordes redondeados
-                shape           = RoundedCornerShape(MAIN_CARD_CORNER),
-                backgroundColor = MaterialTheme.colors.surface.copy(alpha = MAIN_CARD_ALPHA), // fondo semitransparente
-                elevation       = 0.dp                  // sin sombra
+                    .fillMaxWidth()
+                    .heightIn(max = mainCardMaxHeight)
+                    .clip(RoundedCornerShape(MAIN_CARD_CORNER)),
+                backgroundColor = MaterialTheme.colors.surface.copy(alpha = MAIN_CARD_ALPHA),
+                elevation = 0.dp
             ) {
                 Column(
-                    modifier            = Modifier
-                        .fillMaxSize()                  // ocupa todo el espacio de la tarjeta
-                        .padding(24.dp),                // espacio interno
-                    verticalArrangement = Arrangement.SpaceBetween, // separa icono, texto y botón de forma uniforme
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Icono dinámico on/off para Kuntur
                     Icon(
-                        painter            = painterResource(
+                        painter = painterResource(
                             id = if (isListening) R.drawable.ic_kuntur_on else R.drawable.ic_kuntur_off
                         ),
                         contentDescription = null,
-                        modifier           = Modifier.size(64.dp), // tamaño grande
-                        tint               = Color.Unspecified     // mantiene colores originales del drawable
+                        modifier = Modifier.size(64.dp),
+                        tint = Color.Unspecified
                     )
 
-                    // Texto de estado con salto de línea y color condicional
                     val statusText = if (isListening) "Kuntur\na la escucha" else "Kuntur\napagado"
                     val statusColor = if (isListening) Color.Green else Color.Red
                     Text(
-                        text      = statusText,
-                        style     = MaterialTheme.typography.h6,
-                        color     = statusColor,
-                        modifier  = Modifier
-                            .fillMaxWidth()                // ocupa ancho completo para centrar el texto
-                            .padding(vertical = 8.dp),     // espacio arriba y abajo
-                        textAlign = TextAlign.Center       // centra el texto horizontalmente
+                        text = statusText,
+                        style = MaterialTheme.typography.h6,
+                        color = statusColor,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
                     )
 
-                    // Botón invisible que muestra solo la imagen on/off
                     IconButton(
                         onClick = onToggleListening,
                         modifier = Modifier
-                            .size(128.dp)                // área clicable grande
-                            .background(
-                                color = Color.Transparent,  // sin fondo
-                                shape = CircleShape          // clickeable circular
-                            )
+                            .size(128.dp)
+                            .background(Color.Transparent, CircleShape)
                     ) {
                         Icon(
-                            painter            = painterResource(
+                            painter = painterResource(
                                 id = if (isListening) R.drawable.ic_button_off else R.drawable.ic_button_on
                             ),
                             contentDescription = null,
-                            modifier           = Modifier.fillMaxSize(), // ocupa toda el área
-                            tint               = Color.Unspecified       // colores del drawable
+                            modifier = Modifier.fillMaxSize(),
+                            tint = Color.Unspecified
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp)) // separador antes del texto transcrito
+            Spacer(modifier = Modifier.height(0.dp))
 
-            // Texto transcrito en tiempo real
+            // — Texto transcrito —
             Text(
-                text     = if (speechInput.isNotBlank()) speechInput else "Aquí aparecerá tu texto...",
-                style    = MaterialTheme.typography.body1,
-                color    = MaterialTheme.colors.onSurface,
-                modifier = Modifier
-                    .fillMaxWidth() // ancho completo
-                    .padding(0.dp)
+                text = if (speechInput.isNotBlank()) speechInput else "Aquí aparecerá tu texto...",
+                style = MaterialTheme.typography.body1,
+                color = MaterialTheme.colors.onSurface,
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
-        // — Métricas inferiores: dos tarjetas laterales —
+        // — Métricas fijas al fondo —
         Row(
             modifier = Modifier
-                .fillMaxWidth()                          // Ocupa todo el ancho disponible
-                .align(Alignment.BottomCenter)           // Alinea esta fila al centro inferior de la pantalla
-                .padding(bottom = 32.dp),                // Agrega espacio en la parte inferior
-            horizontalArrangement = Arrangement.spacedBy(16.dp)  // Espacio entre las dos tarjetas
+                .fillMaxWidth()
+                .height(metricRowHeight)
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 0.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-        // Tarjeta de métrica izquierda (Última alerta)
-        MetricCard(
-            modifier   = Modifier
-                .weight(1f)                            // Reparte el espacio equitativamente entre ambas tarjetas
-                .height(METRIC_CARD_HEIGHT)            // Establece una altura fija definida previamente
-                .clip(RoundedCornerShape(METRIC_CARD_CORNER)),  // Aplica esquinas redondeadas a la tarjeta
-            icon       = painterResource(id = R.drawable.ic_notification),  // Ícono personalizado desde drawable
-            label      = "Última alerta",                // Etiqueta descriptiva del contenido
-            value      = "21:39",                        // Valor o dato mostrado en la tarjeta
-            cardAlpha  = METRIC_CARD_ALPHA,              // Nivel de transparencia definido previamente
-            cornerSize = METRIC_CARD_CORNER,             // Radio de las esquinas redondeadas
-            elevation  = 0.dp                            // Sin sombra elevada
-        )
-
-        // Tarjeta de métrica derecha (Incidencias)
-        MetricCard(
-            modifier   = Modifier
-                .weight(1f)                            // Reparte el espacio equitativamente entre ambas tarjetas
-                .height(METRIC_CARD_HEIGHT)            // Establece una altura fija definida previamente
-                .clip(RoundedCornerShape(METRIC_CARD_CORNER)),  // Aplica esquinas redondeadas a la tarjeta
-            icon       = painterResource(id = R.drawable.ic_chart),  // Ícono personalizado desde drawable
-            label      = "Incidencias",                  // Etiqueta descriptiva del contenido
-            value      = "20",                           // Valor o dato mostrado en la tarjeta
-            cardAlpha  = METRIC_CARD_ALPHA,              // Nivel de transparencia definido previamente
-            cornerSize = METRIC_CARD_CORNER,             // Radio de las esquinas redondeadas
-            elevation  = 0.dp                            // Sin sombra elevada
-        )
-    }
+            MetricCard(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                icon = painterResource(id = R.drawable.ic_notification),
+                label = "Última alerta",
+                value = "21:39",
+                cardAlpha = METRIC_CARD_ALPHA,
+                cornerSize = METRIC_CARD_CORNER,
+                elevation = 0.dp
+            )
+            MetricCard(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                icon = painterResource(id = R.drawable.ic_chart),
+                label = "Incidencias",
+                value = "20",
+                cardAlpha = METRIC_CARD_ALPHA,
+                cornerSize = METRIC_CARD_CORNER,
+                elevation = 0.dp
+            )
+        }
     }
 }
 
 @Composable
 private fun MetricCard(
-    modifier:    Modifier = Modifier,
-    icon:        Painter,
-    label:       String,
-    value:       String,
-    cardAlpha:   Float,
-    cornerSize:  Dp,
-    elevation:   Dp
+    modifier: Modifier = Modifier,
+    icon: Painter,
+    label: String,
+    value: String,
+    cardAlpha: Float,
+    cornerSize: Dp,
+    elevation: Dp
 ) {
     Card(
-        modifier        = modifier,
-        shape           = RoundedCornerShape(cornerSize),
+        modifier = modifier,
         backgroundColor = MaterialTheme.colors.surface.copy(alpha = cardAlpha),
-        elevation       = elevation
+        shape = RoundedCornerShape(cornerSize),
+        elevation = elevation
     ) {
         Column(
-            modifier            = Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(12.dp),
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                painter      = icon,                  // Aquí usamos Painter ahora
-                contentDescription = null,
-                tint         = MaterialTheme.colors.onSurface
-            )
-            Text(
-                text  = label,
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface
-            )
-            Text(
-                text  = value,
-                style = MaterialTheme.typography.subtitle1,
-                color = MaterialTheme.colors.onSurface
-            )
+            Icon(painter = icon, contentDescription = null, tint = MaterialTheme.colors.onSurface)
+            Text(text = label, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.onSurface)
+            Text(text = value, style = MaterialTheme.typography.subtitle1, color = MaterialTheme.colors.onSurface)
         }
     }
 }
